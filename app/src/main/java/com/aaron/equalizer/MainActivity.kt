@@ -112,6 +112,15 @@ class MainActivity : ComponentActivity() {
         var distTone by remember { mutableFloatStateOf(1000f) }
         var distWet by remember { mutableFloatStateOf(1f) }
 
+        // ── Reverb ────────────────────────────────────────────
+        var reverbOn by remember { mutableStateOf(false) }
+        var reverbMix by remember { mutableFloatStateOf(0.4f) }
+        var reverbRoom by remember { mutableFloatStateOf(0.8f) }
+        var reverbDamp by remember { mutableFloatStateOf(0.5f) }
+        var reverbPre by remember { mutableFloatStateOf(0f) }
+        var reverbLowCut by remember { mutableFloatStateOf(0f) }
+        var reverbWidth by remember { mutableFloatStateOf(1f) }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -392,6 +401,92 @@ class MainActivity : ComponentActivity() {
                 )
                 Text("Wet: ${"%.2f".format(distWet)}")
             }
+
+            HorizontalDivider()
+
+            Text("Reverb", style = MaterialTheme.typography.titleMedium)
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Enabled")
+                Switch(
+                    checked = reverbOn,
+                    onCheckedChange = { on ->
+                        reverbOn = on
+                        setReverbEnabled(on)
+                    }
+                )
+            }
+            if (reverbOn) {
+                Slider(
+                    value = reverbMix,
+                    onValueChange = {
+                        reverbMix = it
+                        setReverbMix(it)
+                    },
+                    valueRange = 0f..1f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Mix: ${"%.2f".format(reverbMix)}")
+
+                Slider(
+                    value = reverbRoom,
+                    onValueChange = {
+                        reverbRoom = it
+                        setReverbRoomSize(it)
+                    },
+                    valueRange = 0f..1f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Room Size: ${"%.2f".format(reverbRoom)}")
+
+                Slider(
+                    value = reverbDamp,
+                    onValueChange = {
+                        reverbDamp = it
+                        setReverbDamp(it)
+                    },
+                    valueRange = 0f..1f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Damping: ${"%.2f".format(reverbDamp)}")
+
+                Slider(
+                    value = reverbPre,
+                    onValueChange = {
+                        reverbPre = it
+                        setReverbPredelay(it)
+                    },
+                    valueRange = 0f..500f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Pre-delay: ${reverbPre.toInt()} ms")
+
+                Slider(
+                    value = reverbLowCut,
+                    onValueChange = {
+                        reverbLowCut = it
+                        setReverbLowCut(it)
+                    },
+                    valueRange = 0f..1000f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Low-cut: ${reverbLowCut.toInt()} Hz")
+
+                Slider(
+                    value = reverbWidth,
+                    onValueChange = {
+                        reverbWidth = it
+                        setReverbWidth(it)
+                    },
+                    valueRange = 0f..1f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Width: ${"%.2f".format(reverbWidth)}")
+            }
+
         }
     }
 
@@ -423,6 +518,14 @@ class MainActivity : ComponentActivity() {
     private external fun setDistortionOutputGain(gain: Float)
     private external fun setDistortionToneHz(hz: Float)
     private external fun setDistortionWet(wet: Float)
+
+    private external fun setReverbEnabled(enabled: Boolean)
+    private external fun setReverbMix(mix: Float)
+    private external fun setReverbRoomSize(size: Float)
+    private external fun setReverbDamp(damp: Float)
+    private external fun setReverbPredelay(ms: Float)
+    private external fun setReverbLowCut(hz: Float)
+    private external fun setReverbWidth(width: Float)
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
