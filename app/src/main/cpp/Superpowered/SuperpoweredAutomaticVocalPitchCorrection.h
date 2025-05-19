@@ -69,7 +69,7 @@ public:
 /// @param output Pointer to floating point numbers. 32-bit mono or interleaved stereo input.
 /// @param stereo Interleaved stereo or mono input and output.
 /// @param numberOfFrames Number of frames to process.
-    JSWASM void process(float *input, float *output, bool stereo, unsigned int numberOfFrames);
+    JSWASM bool process(float *input, float *output, bool stereo, unsigned int numberOfFrames);
 
 /// @brief Set all internals to initial state.
     JSWASM void reset();
