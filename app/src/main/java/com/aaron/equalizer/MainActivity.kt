@@ -23,7 +23,9 @@ import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     companion object {
-        init { System.loadLibrary("equalizer") }
+        init {
+            System.loadLibrary("equalizer")
+        }
     }
 
     private val licenseKey = "ExampleLicenseKey-WillExpire-OnNextUpdate"
@@ -121,6 +123,10 @@ class MainActivity : ComponentActivity() {
         var reverbLowCut by remember { mutableFloatStateOf(0f) }
         var reverbWidth by remember { mutableFloatStateOf(1f) }
 
+        var stereoOn by remember { mutableStateOf(false) }
+        var stereoWidth by remember { mutableFloatStateOf(1f) }
+        var stereoDamp by remember { mutableFloatStateOf(0.5f) }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -152,8 +158,10 @@ class MainActivity : ComponentActivity() {
 
             // Pitch Correction
             Text("Auto-Tune", style = MaterialTheme.typography.titleMedium)
-            Row(Modifier.fillMaxWidth(),
-                Arrangement.SpaceBetween, Alignment.CenterVertically) {
+            Row(
+                Modifier.fillMaxWidth(),
+                Arrangement.SpaceBetween, Alignment.CenterVertically
+            ) {
                 Text("Enabled")
                 Switch(
                     checked = pitchOn,
@@ -161,7 +169,7 @@ class MainActivity : ComponentActivity() {
                         pitchOn = checked
                         setPitchCorrectionEnabled(checked)
                     }
-                    )
+                )
             }
             if (pitchOn) {
                 // Scales: Chromatic, all 12 majors, A Minor, Custom
@@ -169,19 +177,19 @@ class MainActivity : ComponentActivity() {
                     label = "Scale",
                     options = listOf(
                         "Chromatic" to 0,
-                        "C Major"    to 1,
-                        "G Major"    to 2,
-                        "D Major"    to 3,
-                        "A Major"    to 4,
-                        "E Major"    to 5,
-                        "B Major"    to 6,
-                        "F♯ Major"   to 7,
-                        "C♯ Major"   to 8,
-                        "F Major"    to 9,
-                        "B♭ Major"   to 10,
-                        "E♭ Major"   to 11,
-                        "A Minor"    to 12,
-                        "Custom"     to 26
+                        "C Major" to 1,
+                        "G Major" to 2,
+                        "D Major" to 3,
+                        "A Major" to 4,
+                        "E Major" to 5,
+                        "B Major" to 6,
+                        "F♯ Major" to 7,
+                        "C♯ Major" to 8,
+                        "F Major" to 9,
+                        "B♭ Major" to 10,
+                        "E♭ Major" to 11,
+                        "A Minor" to 12,
+                        "Custom" to 26
                     ),
                     selected = scale,
                     onSelect = {
@@ -193,13 +201,13 @@ class MainActivity : ComponentActivity() {
                 ParameterDropdown(
                     label = "Range",
                     options = listOf(
-                        "Sub-Bass"      to 0,
-                        "Bass"          to 1,
-                        "Baritone"      to 2,
-                        "Tenor"         to 3,
-                        "Alto"          to 4,
+                        "Sub-Bass" to 0,
+                        "Bass" to 1,
+                        "Baritone" to 2,
+                        "Tenor" to 3,
+                        "Alto" to 4,
                         "Mezzo-Soprano" to 5,
-                        "Soprano"       to 6
+                        "Soprano" to 6
                     ),
                     selected = range,
                     onSelect = {
@@ -226,11 +234,11 @@ class MainActivity : ComponentActivity() {
                 ParameterDropdown(
                     label = "Clamp",
                     options = listOf(
-                        "Off"        to 0,
-                        "Loose"      to 1,
+                        "Off" to 0,
+                        "Loose" to 1,
                         "Medium-Tight" to 2,
-                        "Tight"      to 3,
-                        "Hard"       to 4
+                        "Tight" to 3,
+                        "Hard" to 4
                     ),
                     selected = clamp,
                     onSelect = {
@@ -257,8 +265,10 @@ class MainActivity : ComponentActivity() {
 
             // Equalizer
             Text("Equalizer", style = MaterialTheme.typography.titleMedium)
-            Row(Modifier.fillMaxWidth(),
-                Arrangement.SpaceBetween, Alignment.CenterVertically) {
+            Row(
+                Modifier.fillMaxWidth(),
+                Arrangement.SpaceBetween, Alignment.CenterVertically
+            ) {
                 Text("Enabled")
                 Switch(
                     checked = eqOn,
@@ -487,6 +497,48 @@ class MainActivity : ComponentActivity() {
                 Text("Width: ${"%.2f".format(reverbWidth)}")
             }
 
+            HorizontalDivider()
+
+            Text("Stereo Enhancer", style = MaterialTheme.typography.titleMedium)
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Enabled")
+                Switch(
+                    checked = stereoOn,
+                    onCheckedChange = { on ->
+                        stereoOn = on
+                        setStereoEnhancerEnabled(on)
+                    }
+                )
+            }
+            if (stereoOn) {
+                Slider(
+                    value = stereoWidth,
+                    onValueChange = {
+                        stereoWidth = it
+                        setStereoEnhancerWidth(it)
+                    },
+                    valueRange = 0f..1f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Width: ${"%.2f".format(stereoWidth)}")
+
+                Slider(
+                    value = stereoDamp,
+                    onValueChange = {
+                        stereoDamp = it
+                        setStereoEnhancerDamp(it)
+                    },
+                    valueRange = 0f..1f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("Damping: ${"%.2f".format(stereoDamp)}")
+            }
+
+
         }
     }
 
@@ -527,6 +579,10 @@ class MainActivity : ComponentActivity() {
     private external fun setReverbLowCut(hz: Float)
     private external fun setReverbWidth(width: Float)
 
+    private external fun setStereoEnhancerEnabled(enabled: Boolean)
+    private external fun setStereoEnhancerWidth(width: Float)
+    private external fun setStereoEnhancerDamp(damp: Float)
+
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun ParameterDropdown(
@@ -566,5 +622,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
 }
