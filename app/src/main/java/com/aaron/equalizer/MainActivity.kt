@@ -12,9 +12,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     companion object {
@@ -84,6 +86,11 @@ class MainActivity : ComponentActivity() {
         var highGain by remember { mutableFloatStateOf(1.0f) }
         var isAudioRunning by remember { mutableStateOf(false) }
 
+        // Compressor state
+        var compOn by remember { mutableStateOf(false) }
+        var threshold by remember { mutableFloatStateOf(-20.0f) }
+        var gainRed by remember { mutableStateOf(0.0f) }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -131,6 +138,44 @@ class MainActivity : ComponentActivity() {
             }) {
                 Text("Stop")
             }
+
+            Divider(modifier = Modifier.padding(vertical = 8.dp))
+
+            // Compressor controls
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Compressor")
+                Switch(
+                    checked = compOn,
+                    onCheckedChange = {
+                        compOn = it
+                        setCompressorEnabled(it)
+                    }
+                )
+            }
+            if (compOn) {
+                Slider(
+                    value = threshold,
+                    onValueChange = {
+                        threshold = it
+                        setCompressorThreshold(it)
+                    },
+                    valueRange = -60.0f..0.0f
+                )
+                Text(text = "Threshold: ${"%.1f".format(threshold)} dB")
+
+                // Live gain reduction meter
+                LaunchedEffect(compOn) {
+                    while (compOn) {
+                        gainRed = getCompressorGainReduction()
+                        delay(100L)
+                    }
+                }
+                Text(text = "Gain reduction: ${"%.2f".format(gainRed)} dB")
+            }
         }
     }
 
@@ -141,4 +186,9 @@ class MainActivity : ComponentActivity() {
     private external fun startAudio()
     private external fun stopAudio()
     private external fun cleanup()
+
+    // Compressor JNI bindings
+    private external fun setCompressorEnabled(enabled: Boolean)
+    private external fun setCompressorThreshold(threshold: Float)
+    private external fun getCompressorGainReduction(): Float
 }
